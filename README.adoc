@@ -40,6 +40,8 @@ jobs:
         with:
           path: '.'        # Directory to scan (default: repo root)
           strict: 'false'  # Promote warnings to errors (default: false)
+          # paths-ignore: defaults to vendored / fixture patterns; override
+          # via newline-separated string. Use '' to disable.
 ----
 
 === Inputs
@@ -55,7 +57,26 @@ jobs:
 | `strict`
 | `false`
 | When `true`, warnings become errors and the action fails on any issue
+
+| `paths-ignore`
+| _vendored & fixture defaults_
+| Newline-separated path fragments to skip. Substring match against each
+  file path. Default set: `vendor/`, `vendored/`, `verified-container-spec/`,
+  `.audittraining/`, `integration/fixtures/`, `test/fixtures/`,
+  `tests/fixtures/`. Pass an empty string (`paths-ignore: ''`) to disable
+  and scan everything. See https://github.com/hyperpolymath/hypatia/pull/243
+  for the architectural rationale (content-pattern validators must
+  distinguish targets from fixtures / vendored / training-corpus files
+  that legitimately contain the very pattern being checked).
 |===
+
+==== Why default-on path exemptions?
+
+A2ML files inside vendored projects (e.g. `verified-container-spec/`) have
+their own identity declarations elsewhere or are themselves training corpora.
+Flagging every such file as "missing identity field" is provenance noise,
+not signal. The defaults match the canonical RSR vendored-content paths;
+override for project-specific carve-outs.
 
 === Outputs
 
