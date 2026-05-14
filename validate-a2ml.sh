@@ -146,12 +146,25 @@ validate_a2ml() {
         is_manifest=true
     fi
 
-    if [[ "$has_identity" == "false" && "$is_manifest" == "false" ]]; then
+    # Contractile-shape A2ML files use `@directive:` syntax instead of
+    # TOML `key = value`. Trustfile.a2ml, Intentfile.a2ml, Mustfile.a2ml,
+    # Adjustfile.a2ml etc. are policy / trust / intent / abstract files
+    # whose identity is implicit in their @-prefixed directives
+    # (`@trust-level`, `@intent`, ...) rather than a TOML name/version
+    # pair. Treating them as manifest-shape produces 100% false positives —
+    # they're a different A2ML doc type. Detected by the presence of any
+    # contractile directive in the file body.
+    local is_contractile_shape=false
+    if grep -qE '^@(abstract|trust-level|trust-boundary|trust-actions|trust-deny|intent|must|adjust|end)([[:space:]]*:|$)' "$file"; then
+        is_contractile_shape=true
+    fi
+
+    if [[ "$has_identity" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
         report_issue "error" "$file" 1 \
             "Missing required identity field (agent-id, name, or project)"
     fi
 
-    if [[ "$has_version" == "false" && "$is_manifest" == "false" ]]; then
+    if [[ "$has_version" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
         report_issue "warning" "$file" 1 \
             "Missing version or schema_version field"
     fi
