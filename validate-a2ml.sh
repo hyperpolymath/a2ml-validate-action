@@ -26,6 +26,30 @@ set -euo pipefail
 
 SCAN_PATH="${INPUT_PATH:-.}"
 STRICT="${INPUT_STRICT:-false}"
+PATHS_IGNORE_RAW="${INPUT_PATHS_IGNORE:-}"
+
+# Parse paths-ignore: newline-separated fragments, blank lines and # comments
+# stripped. Each fragment is a substring match against the file path. Pattern
+# adopted from hyperpolymath/hypatia#243 — content-pattern validators must
+# distinguish a target from a vendored / fixture file that legitimately
+# contains the very pattern being checked.
+PATHS_IGNORE=()
+while IFS= read -r _frag; do
+    # Strip leading and trailing whitespace (canonical bash idiom).
+    _frag="${_frag#"${_frag%%[![:space:]]*}"}"
+    _frag="${_frag%"${_frag##*[![:space:]]}"}"
+    [[ -z "$_frag" || "$_frag" == \#* ]] && continue
+    PATHS_IGNORE+=("$_frag")
+done <<< "$PATHS_IGNORE_RAW"
+
+# Returns 0 if path should be skipped (matches any ignore fragment)
+path_ignored() {
+    local p="$1" frag
+    for frag in "${PATHS_IGNORE[@]}"; do
+        [[ "$p" == *"$frag"* ]] && return 0
+    done
+    return 1
+}
 
 # Counters
 FILES_SCANNED=0
@@ -193,7 +217,22 @@ echo "Scanning ${SCAN_PATH} for .a2ml files..."
 echo ""
 
 # Find all .a2ml files, excluding .git directory
-mapfile -t a2ml_files < <(find "$SCAN_PATH" -name '*.a2ml' -not -path '*/.git/*' -type f | sort)
+mapfile -t a2ml_candidates < <(find "$SCAN_PATH" -name '*.a2ml' -not -path '*/.git/*' -type f | sort)
+
+# Apply paths-ignore filter
+a2ml_files=()
+SKIPPED=0
+for _f in "${a2ml_candidates[@]}"; do
+    if path_ignored "$_f"; then
+        SKIPPED=$((SKIPPED + 1))
+        continue
+    fi
+    a2ml_files+=("$_f")
+done
+
+if [[ $SKIPPED -gt 0 ]]; then
+    echo "::notice::Skipped ${SKIPPED} file(s) matching paths-ignore"
+fi
 
 if [[ ${#a2ml_files[@]} -eq 0 ]]; then
     echo "::notice::No .a2ml files found in ${SCAN_PATH}"
