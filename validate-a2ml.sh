@@ -121,6 +121,21 @@ validate_a2ml() {
     if [[ "$basename" == *"AI-MANIFEST"* ]]; then
         is_manifest=true
     fi
+    # Canonical typed manifests under .machine_readable/6a2/ — identity comes
+    # from the enclosing directory + filename, not an in-file field. Sibling
+    # files in the same directory (ECOSYSTEM.a2ml, STATE.a2ml) DO carry their
+    # own 
+ame/project and continue to be validated normally.
+    case "$basename" in
+        AGENTIC.a2ml|META.a2ml|NEUROSYM.a2ml|PLAYBOOK.a2ml)
+            is_manifest=true
+            ;;
+        # Dockerfile-style top-level typed manifests (Intentfile, Trustfile, …)
+        # use markdown-flavoured A2ML; identity is carried by the parent repo.
+        *file.a2ml)
+            is_manifest=true
+            ;;
+    esac
 
     if [[ "$has_identity" == "false" && "$is_manifest" == "false" ]]; then
         report_issue "error" "$file" 1 \
