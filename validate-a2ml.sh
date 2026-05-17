@@ -173,12 +173,27 @@ validate_a2ml() {
         is_contractile_shape=true
     fi
 
-    if [[ "$has_identity" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
+    # Canonical structured A2ML tree. Everything under a `.machine_readable/`
+    # directory is a typed agent-readable doc (CLADE, ANCHOR, STATE,
+    # ECOSYSTEM, agent_instructions/{debt,coverage,methodology}, ai/AI,
+    # policies/*, integrations/*, …). Per the RSR convention these carry
+    # identity structurally — owning repo + path + filename — not via an
+    # in-file `name`/`agent-id`. This generalises the `.machine_readable/6a2/`
+    # rationale above to the whole tree: rsr-template-repo itself ships these
+    # files without an in-file identity key, so requiring one produces
+    # estate-wide false positives on every repo built from the canonical
+    # template. Files outside `.machine_readable/` are still validated.
+    local is_structural_identity=false
+    if [[ "$file" == *"/.machine_readable/"* || "$file" == "./.machine_readable/"* || "$file" == ".machine_readable/"* ]]; then
+        is_structural_identity=true
+    fi
+
+    if [[ "$has_identity" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" && "$is_structural_identity" == "false" ]]; then
         report_issue "error" "$file" 1 \
             "Missing required identity field (agent-id, name, or project)"
     fi
 
-    if [[ "$has_version" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
+    if [[ "$has_version" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" && "$is_structural_identity" == "false" ]]; then
         report_issue "warning" "$file" 1 \
             "Missing version or schema_version field"
     fi
