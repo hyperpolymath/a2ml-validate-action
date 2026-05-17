@@ -173,12 +173,36 @@ validate_a2ml() {
         is_contractile_shape=true
     fi
 
-    if [[ "$has_identity" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
+    # Clade-shape A2ML files (CLADE.a2ml) are gv-clade-index registry
+    # declarations. Their identity is the registry uuid + `canonical-name`
+    # under an `[identity]` block plus a `[clade]` assignment — not a TOML
+    # `name = ...` field. The regex above only recognises `name`, so these
+    # registry-governed files produce a false positive. Same doc-type
+    # carve-out as 6a2/contractile (hypatia#243): a validator that scans
+    # content patterns must distinguish a target file from a legitimately
+    # differently-shaped one. Detected structurally by the `[clade]` section
+    # or a `canonical-name` field.
+    local is_clade_shape=false
+    if grep -qE '^\[clade\][[:space:]]*$|^canonical-name[[:space:]]*=' "$file"; then
+        is_clade_shape=true
+    fi
+
+    # Anchor-shape A2ML files (ANCHOR.a2ml) are YAML-flavoured: identity is
+    # the reverse-DNS `id:` (e.g. `id: "org.hyperpolymath.<repo>"`) using
+    # `key: value`, never TOML `key = value`. Forcing a `name =` line into
+    # them would corrupt the YAML. Detected by the `⚓ ANCHOR` marker or a
+    # reverse-DNS top-level `id:` value.
+    local is_anchor_shape=false
+    if grep -qE '^#[[:space:]]*⚓[[:space:]]*ANCHOR|^id:[[:space:]]*"[a-z][a-z0-9]*(\.[a-z0-9-]+)+"' "$file"; then
+        is_anchor_shape=true
+    fi
+
+    if [[ "$has_identity" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" && "$is_clade_shape" == "false" && "$is_anchor_shape" == "false" ]]; then
         report_issue "error" "$file" 1 \
             "Missing required identity field (agent-id, name, or project)"
     fi
 
-    if [[ "$has_version" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" ]]; then
+    if [[ "$has_version" == "false" && "$is_manifest" == "false" && "$is_contractile_shape" == "false" && "$is_clade_shape" == "false" && "$is_anchor_shape" == "false" ]]; then
         report_issue "warning" "$file" 1 \
             "Missing version or schema_version field"
     fi
