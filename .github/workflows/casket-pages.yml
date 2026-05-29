@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -22,79 +22,56 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - name: Checkout casket-ssg
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          repository: hyperpolymath/casket-ssg
-          path: .casket-ssg
-
-      - name: Setup GHCup
-        uses: haskell-actions/setup@ec49483bfc012387b227434aba94f59a6ecd0900 # v2
-        with:
-          ghc-version: '9.8.2'
-          cabal-version: '3.10'
-
-      - name: Cache Cabal
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: |
-            ~/.cabal/packages
-            ~/.cabal/store
-            .casket-ssg/dist-newstyle
-          key: ${{ runner.os }}-casket-${{ hashFiles('.casket-ssg/casket-ssg.cabal') }}
-
-      - name: Build casket-ssg
-        working-directory: .casket-ssg
-        run: cabal build
-
-      - name: Prepare site source
+      - name: Build static site
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .site-src _site
+          rm -rf _site
+          mkdir -p _site
 
-          if [ -d site ]; then
-            cp -R site .site-src
-          else
-            mkdir -p .site-src
-            TODAY="$(date +%Y-%m-%d)"
-            REPO_NAME="${{ github.event.repository.name }}"
-            REPO_URL="https://github.com/${{ github.repository }}"
-            README_URL=""
+          today="$(date +%Y-%m-%d)"
+          repo_name="${{ github.event.repository.name }}"
+          repo_url="https://github.com/${{ github.repository }}"
+          readme_link=""
 
-            if [ -f README.md ]; then
-              README_URL="${REPO_URL}/blob/${{ github.ref_name }}/README.md"
-            elif [ -f README.adoc ]; then
-              README_URL="${REPO_URL}/blob/${{ github.ref_name }}/README.adoc"
-            fi
-
-            {
-              echo "---"
-              echo "title: ${REPO_NAME}"
-              echo "date: ${TODAY}"
-              echo "---"
-              echo
-              echo "# ${REPO_NAME}"
-              echo
-              echo "Static documentation site for ${REPO_NAME}."
-              echo
-              echo "- Source repository: [${{ github.repository }}](${REPO_URL})"
-              if [ -n "${README_URL}" ]; then
-                echo "- README: [project README](${README_URL})"
-              fi
-              if [ -d docs ]; then
-                echo "- Docs directory: [docs/](${REPO_URL}/tree/${{ github.ref_name }}/docs)"
-              fi
-              echo
-              echo "Project-specific site content can be added later under site/."
-            } > .site-src/index.md
+          if [ -f README.md ]; then
+            readme_link="<li><a href=\"${repo_url}/blob/${{ github.ref_name }}/README.md\">README</a></li>"
+          elif [ -f README.adoc ]; then
+            readme_link="<li><a href=\"${repo_url}/blob/${{ github.ref_name }}/README.adoc\">README</a></li>"
           fi
 
-      - name: Build site
-        run: |
-          mkdir -p _site
-          cd .casket-ssg && cabal run casket-ssg -- build ../.site-src ../_site
-          touch ../_site/.nojekyll
+          docs_link=""
+          if [ -d docs ]; then
+            docs_link="<li><a href=\"${repo_url}/tree/${{ github.ref_name }}/docs\">docs/</a></li>"
+          fi
+
+          cat > _site/index.html <<EOF
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>${repo_name}</title>
+              <style>
+                body { font-family: system-ui, sans-serif; max-width: 48rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5; color: #1f2937; }
+                a { color: #0f766e; }
+                code { background: #f3f4f6; padding: 0.15rem 0.3rem; border-radius: 0.25rem; }
+              </style>
+            </head>
+            <body>
+              <h1>${repo_name}</h1>
+              <p>Static documentation site for <code>${{ github.repository }}</code>.</p>
+              <ul>
+                <li><a href="${repo_url}">Source repository</a></li>
+                ${readme_link}
+                ${docs_link}
+              </ul>
+              <p>Generated on ${today} from <code>${{ github.sha }}</code>.</p>
+            </body>
+          </html>
+          EOF
+
+          touch _site/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
