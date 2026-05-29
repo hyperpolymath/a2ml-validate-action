@@ -30,7 +30,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - language: javascript-typescript
+          # a2ml-validate-action ships only YAML + Bash + Markdown (no JS/TS
+          # source). The `actions` language scans workflow files; the previous
+          # `javascript-typescript` entry made CodeQL fail with "no source code
+          # seen during build" on every run.
+          - language: actions
             build-mode: none
 
     steps:

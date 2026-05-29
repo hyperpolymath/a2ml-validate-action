@@ -36,7 +36,10 @@ jobs:
         with:
           results_file: results.sarif
           results_format: sarif
-          publish_results: true
+          # The Scorecard publish endpoint requires the job to contain only
+          # `uses` steps. This workflow also uploads SARIF and checks the score,
+          # so keep publication disabled and rely on the SARIF upload below.
+          publish_results: false
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@c6f931105cb2c34c8f901cc885ba1e2e259cf745 # v4

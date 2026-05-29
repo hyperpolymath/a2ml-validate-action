@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Propagation
+        id: dispatch
+        continue-on-error: true
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v3
         with:
           token: ${{ secrets.FARM_DISPATCH_TOKEN }}
@@ -30,4 +32,9 @@ jobs:
             }
 
       - name: Confirm
+        if: steps.dispatch.outcome == 'success'
         run: echo "::notice::Propagation triggered for ${{ github.event.repository.name }}"
+
+      - name: Warn if propagation did not run
+        if: steps.dispatch.outcome != 'success'
+        run: echo "::warning::Forge propagation dispatch failed or was skipped; check FARM_DISPATCH_TOKEN."
