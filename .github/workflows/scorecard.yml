@@ -8,9 +8,16 @@ on:
   push:
     branches: [main]
 
-permissions: read-all
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
 
 jobs:
   analysis:
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
     uses: hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@e0caf11508a3989574713c78f5f444f2ce5e33ef
     secrets: inherit

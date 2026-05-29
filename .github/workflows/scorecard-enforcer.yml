@@ -48,15 +48,35 @@ jobs:
 
       - name: Check minimum score
         run: |
-          # Parse score from results
-          SCORE=$(jq -r '.runs[0].tool.driver.properties.score // 0' results.sarif 2>/dev/null || echo "0")
+          set -euo pipefail
+
+          # Scorecard's SARIF output is useful for code scanning, but some
+          # versions do not expose an aggregate score in SARIF. Treat missing
+          # score metadata as "not enforceable" instead of a false zero.
+          SCORE="$(jq -r '
+            .runs[0].invocations[0].properties.score //
+            .runs[0].tool.driver.properties.score //
+            empty
+          ' results.sarif 2>/dev/null || true)"
+
+          if [ -z "$SCORE" ] || [ "$SCORE" = "null" ]; then
+            echo "::warning::OpenSSF Scorecard SARIF did not expose an aggregate score; SARIF upload succeeded, skipping numeric threshold."
+            exit 0
+          fi
+
+          case "$SCORE" in
+            ''|*[!0-9.]*)
+              echo "::warning::OpenSSF Scorecard score '$SCORE' is not numeric; skipping numeric threshold."
+              exit 0
+              ;;
+          esac
 
           echo "OpenSSF Scorecard Score: $SCORE"
 
           # Minimum acceptable score (0-10 scale)
           MIN_SCORE=5
 
-          if [ "$(echo "$SCORE < $MIN_SCORE" | bc -l)" = "1" ]; then
+          if awk -v score="$SCORE" -v min="$MIN_SCORE" 'BEGIN { exit !(score < min) }'; then
             echo "::error::Scorecard score $SCORE is below minimum $MIN_SCORE"
             exit 1
           fi

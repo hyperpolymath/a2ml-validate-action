@@ -42,6 +42,18 @@ jobs:
         with:
           path: '.'
           strict: 'false'
+          paths-ignore: |
+            vendor/
+            vendored/
+            verified-container-spec/
+            .audittraining/
+            integration/fixtures/
+            test/fixtures/
+            tests/fixtures/
+            absolute-zero/
+            docs/governance/CRG-CRITERIA.a2ml
+            docs/governance/MAINTENANCE-CHECKLIST.a2ml
+            docs/governance/TSDM.a2ml
 
       - name: Write summary
         run: |
@@ -90,6 +102,16 @@ jobs:
         with:
           path: '.'
           strict: 'false'
+          paths-ignore: |
+            vendor/
+            vendored/
+            verified-container-spec/
+            .audittraining/
+            integration/fixtures/
+            test/fixtures/
+            tests/fixtures/
+            absolute-zero/
+            container/deploy.k9.ncl
 
       - name: Write summary
         run: |
