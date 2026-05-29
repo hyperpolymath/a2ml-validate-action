@@ -20,7 +20,7 @@ import? "contractile.just"
 
 # Project metadata — customize these
 project := "a2ml-validate-action"
-version := "0.1.0"
+version := "1.0.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
 # ═══════════════════════════════════════════════════════════════════════════════

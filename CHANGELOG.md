@@ -9,3 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- Run: just changelog -->
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-05-29
+
+### Added
+
+- Initial Marketplace-ready composite action for validating `.a2ml` manifests.
+- Configurable `path`, `strict`, and `paths-ignore` inputs.
+- GitHub Actions outputs for scanned files, validation errors, and warnings.
+
+### Fixed
+
+- Allow local smoke runs outside GitHub Actions by defaulting missing `GITHUB_OUTPUT` to `/dev/null`.

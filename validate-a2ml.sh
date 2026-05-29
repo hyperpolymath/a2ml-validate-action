@@ -27,6 +27,7 @@ set -euo pipefail
 SCAN_PATH="${INPUT_PATH:-.}"
 STRICT="${INPUT_STRICT:-false}"
 PATHS_IGNORE_RAW="${INPUT_PATHS_IGNORE:-}"
+GITHUB_OUTPUT_FILE="${GITHUB_OUTPUT:-/dev/null}"
 
 # Parse paths-ignore: newline-separated fragments, blank lines and # comments
 # stripped. Each fragment is a substring match against the file path. Pattern
@@ -278,9 +279,9 @@ fi
 
 if [[ ${#a2ml_files[@]} -eq 0 ]]; then
     echo "::notice::No .a2ml files found in ${SCAN_PATH}"
-    echo "files_scanned=0" >> "$GITHUB_OUTPUT" 2>/dev/null || true
-    echo "errors=0" >> "$GITHUB_OUTPUT" 2>/dev/null || true
-    echo "warnings=0" >> "$GITHUB_OUTPUT" 2>/dev/null || true
+    echo "files_scanned=0" >> "$GITHUB_OUTPUT_FILE" 2>/dev/null || true
+    echo "errors=0" >> "$GITHUB_OUTPUT_FILE" 2>/dev/null || true
+    echo "warnings=0" >> "$GITHUB_OUTPUT_FILE" 2>/dev/null || true
     echo "::endgroup::"
     exit 0
 fi
@@ -306,7 +307,7 @@ echo "────────────────────────�
     echo "files_scanned=${FILES_SCANNED}"
     echo "errors=${ERRORS}"
     echo "warnings=${WARNINGS}"
-} >> "$GITHUB_OUTPUT" 2>/dev/null || true
+} >> "$GITHUB_OUTPUT_FILE" 2>/dev/null || true
 
 echo "::endgroup::"
 
