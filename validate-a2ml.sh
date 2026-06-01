@@ -129,11 +129,25 @@ validate_a2ml() {
         line_num=$((line_num + 1))
 
         # Check for identity fields (various A2ML patterns)
+        # TOML/kv form: `name = "..."`, `project = "..."`, `agent-id = "..."`
         if [[ "$line" =~ ^[[:space:]]*(agent[-_]id|name|project)[[:space:]]*= ]]; then
             has_identity=true
         fi
-        # Check for version field
+        # S-expression form: `(name "...")`, `(project "...")`,
+        # `(agent-id "...")`. Some A2ML dialects (audit registries,
+        # classification stores) use Lisp-style s-expressions for the
+        # metadata block instead of TOML. Identity carries the same
+        # semantics; only the syntax differs. Match at any indent so it
+        # also picks up entries nested under `(metadata ...)`.
+        if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*(agent[-_]id|name|project)[[:space:]]+\" ]]; then
+            has_identity=true
+        fi
+        # Check for version field — TOML form
         if [[ "$line" =~ ^[[:space:]]*(version|schema_version)[[:space:]]*= ]]; then
+            has_version=true
+        fi
+        # Version field — s-expression form
+        if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*(version|schema_version)[[:space:]]+\" ]]; then
             has_version=true
         fi
     done < "$file"
