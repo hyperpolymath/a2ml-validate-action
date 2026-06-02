@@ -3,7 +3,7 @@
 #
 # STATE.a2ml — Project state checkpoint (META-TEMPLATE)
 #
-# This is the STATE file for rsr-template-repo itself.
+# This is the STATE file for a2ml-validate-action.
 # When consumed by a new project, replace {{PLACEHOLDER}} tokens
 # and customize sections below for the target project.
 
