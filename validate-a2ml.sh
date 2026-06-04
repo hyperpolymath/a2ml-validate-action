@@ -175,7 +175,7 @@ validate_a2ml() {
 
     # Canonical structured A2ML tree. Everything under a `.machine_readable/`
     # directory is a typed agent-readable doc (CLADE, ANCHOR, STATE,
-    # ECOSYSTEM, agent_instructions/{debt,coverage,methodology}, ai/AI,
+    # ECOSYSTEM, bot_directives/{debt,coverage,methodology}, ai/AI,
     # policies/*, integrations/*, …). Per the RSR convention these carry
     # identity structurally — owning repo + path + filename — not via an
     # in-file `name`/`agent-id`. This generalises the `.machine_readable/6a2/`
