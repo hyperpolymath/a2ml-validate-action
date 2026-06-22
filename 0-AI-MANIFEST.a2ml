@@ -23,11 +23,11 @@ These 6 a2ml files MUST exist in `.machine_readable/` directory ONLY:
 
 **CRITICAL:** If ANY of these files exist in the root directory, this is an ERROR.
 
-### Anchor File: `.machine_readable/anchors/ANCHOR.a2ml` ONLY
+### Anchor File: `.machine_readable/descriptiles/anchors/ANCHOR.a2ml` ONLY
 
 Canonical authority and semantic-boundary declaration MUST exist at:
 
-` .machine_readable/anchors/ANCHOR.a2ml `
+` .machine_readable/descriptiles/anchors/ANCHOR.a2ml `
 
 Do not place `ANCHOR.a2ml` at repository root.
 
