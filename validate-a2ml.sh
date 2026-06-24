@@ -142,12 +142,24 @@ validate_a2ml() {
         if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*(agent[-_]id|name|project)[[:space:]]+\" ]]; then
             has_identity=true
         fi
+        # Colon / brace-block form: `name: "..."`, `id: "..."`, `project: "..."`.
+        # YAML-ish and brace-block A2ML dialects (e.g. `Trust { name: "..." }`,
+        # `id: "tsdm-standard"`) carry the same identity semantics; only the
+        # delimiter (`:` vs `=`) differs. `id` is the brace-block spelling of an
+        # identity key.
+        if [[ "$line" =~ ^[[:space:]]*(agent[-_]id|name|project|id)[[:space:]]*: ]]; then
+            has_identity=true
+        fi
         # Check for version field — TOML form
         if [[ "$line" =~ ^[[:space:]]*(version|schema_version)[[:space:]]*= ]]; then
             has_version=true
         fi
         # Version field — s-expression form
         if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*(version|schema_version)[[:space:]]+\" ]]; then
+            has_version=true
+        fi
+        # Version field — colon / brace-block form
+        if [[ "$line" =~ ^[[:space:]]*(version|schema_version)[[:space:]]*: ]]; then
             has_version=true
         fi
     done < "$file"
@@ -165,7 +177,10 @@ validate_a2ml() {
     # files in the same directory (ECOSYSTEM.a2ml, STATE.a2ml) DO carry their
     # own $name/project and continue to be validated normally.
     case "$basename" in
-        AGENTIC.a2ml|META.a2ml|NEUROSYM.a2ml|PLAYBOOK.a2ml)
+        AGENTIC.a2ml|META.a2ml|NEUROSYM.a2ml|PLAYBOOK.a2ml|AI.a2ml)
+            # AI.a2ml = free-text "AI Assistant Instructions" manifest, the same
+            # doc type as 0-AI-MANIFEST.a2ml but with the bare name; identity is
+            # carried by the enclosing repo/plugin dir, not an in-file field.
             is_manifest=true
             ;;
         # Dockerfile-style top-level typed manifests (Intentfile, Trustfile, …)
