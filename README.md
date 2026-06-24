@@ -108,6 +108,6 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 == License
 
-SPDX-License-Identifier: MPL-2.0
+SPDX-License-Identifier: CC-BY-SA-4.0
 
 See link:LICENSE[LICENSE] for details.
