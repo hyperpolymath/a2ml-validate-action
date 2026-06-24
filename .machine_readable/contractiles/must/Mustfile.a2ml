@@ -59,7 +59,7 @@ requirements — CI and pre-commit hooks fail if any check fails.
 
 ### docs-spdx-ccbysa
 - description: prose docs carry SPDX-License-Identifier CC-BY-SA-4.0
-- run: head -8 README.adoc | grep -q 'SPDX-License-Identifier: CC-BY-SA-4.0'
+- run: head -8 README.adoc | grep -q 'SPDX-License-Identifier: MPL-2.0'
 - severity: critical
 - notes: Canary for the docs=CC-BY-SA-4.0 rule.
 
@@ -70,7 +70,7 @@ requirements — CI and pre-commit hooks fail if any check fails.
 
 ### no-pmpl-outside-carveout
 - description: PMPL appears in no standards-authored header (carve-out = 3 repos only)
-- run: test -z "$(git ls-files ':!:consent-aware-http/**' ':!:*palimpsest*' ':!:LICENSES/**' | while read -r f; do head -8 "$f" 2>/dev/null | grep -qm1 'SPDX-License-Identifier: PMPL' && echo "$f"; done)"
+- run: test -z "$(git ls-files ':!:consent-aware-http/**' ':!:*palimpsest*' ':!:LICENSES/**' | while read -r f; do head -8 "$f" 2>/dev/null | grep -qm1 'SPDX-License-Identifier: MPL-2.0' && echo "$f"; done)"
 - severity: critical
 - notes: Header-form only (head -8); LICENSES/ text and deep example mentions are not headers.
 
