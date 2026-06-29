@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # TEST-NEEDS.md — a2ml-validate-action
 
 ## CRG Grade: C — ACHIEVED 2026-04-04
@@ -7,7 +11,7 @@
 | Category | Count | Notes |
 |----------|-------|-------|
 | Test directories | 2 | Location(s): /verification/tests, /tests |
-| CI workflows | 21 | Running tests on GitHub Actions |
+| CI workflows | 14 | Running tests on GitHub Actions |
 | Tests | Present | Configured in CI workflows |
 
 ## What's Covered
