@@ -29,14 +29,6 @@ inputs:
       will fail on any validation issue. Defaults to false.
     required: false
     default: 'false'
-  enforce-canonical-dialect:
-    description: >-
-      When true, files written in a non-canonical A2ML dialect (YAML or
-      S-expression instead of canonical TOML) are reported as errors rather
-      than warnings. Defaults to false so the estate can migrate incrementally.
-      Canonical A2ML dialect: TOML (key = value / [section]).
-    required: false
-    default: 'false'
   paths-ignore:
     description: >-
       Newline-separated path fragments to skip. Each line is matched as a
@@ -77,7 +69,6 @@ runs:
       env:
         INPUT_PATH: ${{ inputs.path }}
         INPUT_STRICT: ${{ inputs.strict }}
-        INPUT_ENFORCE_CANONICAL_DIALECT: ${{ inputs.enforce-canonical-dialect }}
         INPUT_PATHS_IGNORE: ${{ inputs.paths-ignore }}
       run: |
         "${GITHUB_ACTION_PATH}/validate-a2ml.sh"

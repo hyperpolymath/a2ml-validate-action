@@ -12,16 +12,6 @@ RSR (Rhodium Standard Repository) projects to declare machine-readable
 metadata, AI agent instructions, and project state. This action scans
 for `.a2ml` files and validates their structure and required fields.
 
-# Canonical dialect: TOML
-
-Estate decision (2026-07-06): the **one canonical A2ML dialect is TOML**
-(`key = value` / `[section]`). Files written in YAML (`key:`) or S-expression
-(`(form ...)`) are non-canonical and should be converted. Check 5 flags them as
-a **warning** by default; set `enforce-canonical-dialect: true` to make it a
-hard **error** once a repository's `.a2ml` files are all converted. AI-manifest
-templates are exempt from this check until they are converted upstream in
-`rsr-template-repo` / `standards`.
-
 # Checks Performed
 
 1.  **SPDX header** — Verifies `SPDX-License-Identifier` is present in

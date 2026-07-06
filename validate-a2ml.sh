@@ -26,7 +26,6 @@ set -euo pipefail
 
 SCAN_PATH="${INPUT_PATH:-.}"
 STRICT="${INPUT_STRICT:-false}"
-ENFORCE_DIALECT="${INPUT_ENFORCE_CANONICAL_DIALECT:-false}"
 PATHS_IGNORE_RAW="${INPUT_PATHS_IGNORE:-}"
 GITHUB_OUTPUT_FILE="${GITHUB_OUTPUT:-/dev/null}"
 
@@ -279,32 +278,6 @@ validate_a2ml() {
             fi
         fi
     done < "$file"
-
-    # --- Check 5: Canonical dialect (TOML) ---
-    # Estate canon (2026-07-06): .a2ml is ONE dialect — TOML (`key = value` /
-    # `[section]`). Flag repo-specific files still written as YAML (`key:`) or
-    # S-expression (`(form ...)`). AI manifests are template-sourced (converted
-    # upstream in rsr-template-repo/standards), so they are exempt here to avoid
-    # estate-wide noise before that conversion lands. Warning by default so the
-    # estate can migrate incrementally; set enforce_canonical_dialect=true to
-    # make it a hard error once conversion is complete.
-    if [[ "$is_manifest" == "false" ]]; then
-        local _sexpr _toml _yaml _dialect=""
-        _sexpr=$(grep -cE '^[[:space:]]*\([a-zA-Z]' "$file" 2>/dev/null || true)
-        _toml=$(grep -cE '^[[:space:]]*(\[[^]]+\]|[A-Za-z0-9_.-]+[[:space:]]*=)' "$file" 2>/dev/null || true)
-        _yaml=$(grep -cE '^[[:space:]]*[A-Za-z0-9_-]+:[[:space:]]' "$file" 2>/dev/null || true)
-        if [[ "${_sexpr:-0}" -gt 2 && "${_toml:-0}" -eq 0 ]]; then
-            _dialect="S-expression"
-        elif [[ "${_yaml:-0}" -gt 2 && "${_toml:-0}" -le 1 ]]; then
-            _dialect="YAML"
-        fi
-        if [[ -n "$_dialect" ]]; then
-            local _sev="warning"
-            [[ "$ENFORCE_DIALECT" == "true" ]] && _sev="error"
-            report_issue "$_sev" "$file" "1" \
-                "Non-canonical A2ML dialect ($_dialect). Canonical A2ML dialect is TOML (key = value / [section]); convert this file."
-        fi
-    fi
 }
 
 # ---------------------------------------------------------------------------
